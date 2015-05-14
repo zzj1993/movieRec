@@ -1,0 +1,270 @@
+@charset "utf-8";
+/* CSS Document */
+
+/*公用*/
+.comWidth{
+	width:1000px; 
+	margin-left:auto; 
+	margin-right:auto;
+	}
+.leftArea{float:left;}
+.rightArea{float:right;}
+.hide{display:none;}
+.show{display:block;}
+
+/*注册登录*/
+/*登陆*/
+.regWidth{	
+	width:458px; 
+	margin-left:auto; 
+	margin-right:auto;line-height:50px;}
+.welcome_title{
+	font-family:"Microsoft YaHei", "微软雅黑";
+	font-size:24px; 
+	color:#FFF; 
+	float:left; 
+	padding-left:24px;}
+.loginBox{
+	width:458px; 
+	border:#999 solid 1px; 
+	margin:10px auto; 
+	position:relative;}
+.login_cont{
+	padding:15px 76px;}
+.l_tit{
+	color:#666; 
+	line-height:20px;}
+.login_input{
+	border:#999 solid 1px; 
+	height:32px; 
+	line-height:32px\9; 
+	text-indent:10px;
+	width:100%;}
+/*.user_icon{background:url(../images/icon/user_icon.jpg) left center no-repeat;}
+.pwd_icon{background:url(../images/icon/pwd_icon.jpg) left center no-repeat;}*/
+.mb_10{
+	margin-bottom:10px;}
+.mb_10 a{
+	padding-top:10px;
+	float:right;}
+.mb_10 a:hover{
+	color:#ff8040;
+	text-decoration:underline;}
+.autoLogin{
+	padding-top:27px; 
+	padding-bottom:28px;}
+.checked{
+	position:relative; 
+	top:3px; 
+	margin-right:3px;}
+.login_btn{
+	width:309px; 
+	height:36px; 
+	background:url(../images/icon/login_btn.jpg) left top no-repeat;}
+.login_partners{
+	padding-top:34px;}
+.login_list li{
+	float:left; 
+	line-height:20px;}
+.login_list a:hover{
+	color:#ff8040;
+	text-decoration:underline;}
+.login_list span{
+	color:#999; 
+	margin:0 2px;}
+
+.red_logo .comWidth{
+	width:630px;}
+.regBox{
+	width:628px; 
+	margin:10px auto; 
+	border:#CCC solid 1px;}
+.reg_item{
+	font:14px/34px "宋体"; 
+	width:110px; 
+	text-align:right; 
+	float:left;}
+.reg_item i{
+	color:red; 
+	font-style:normal; 
+	margin-right:5px;}
+.input_item{
+	width:306px; 
+	float:left;}
+.regBox li{
+	height:70px; 
+	vertical-align:top;}
+.regBox .autoLogin{
+	height:46px; 
+	padding:0;}
+.regBox .login_cont{
+	padding:45px 76px 20px 76px;}
+.reg_btn{
+	width:309px;
+	height:36px;
+	background-color:#6BC30D;
+	font-family:"Microsoft YaHei", "微软雅黑";
+	font-size:16px;
+	color:#FFF;
+	display:block;}
+
+/*顶部菜单栏*/
+.headBar{
+	width:100%;
+	background:#5a5f61;
+	left:0;top:0;
+	z-index:10;
+	height:50px;
+	line-height:50px;
+	font-family:"Microsoft YaHei", "微软雅黑";
+	color:#FFF;
+	line-height:50px;}
+.welcome_title{
+	font-size:18px;}
+.nav{
+	line-height:50px;
+	font-size:18px;
+	padding-left:50px;}
+.search_box{
+	width:430px; 
+	padding-left:100px;
+	padding-top:7px;}
+.search_text{
+	width:350px;
+	height:35px;
+	line-height:35px\9;/*css hack  \9 代表所有的ie浏览器*/ 
+	padding:0 5px; 
+	background-color:#FFF;}
+.search_btn{
+	width:70px;
+	height:35px; 
+	font-size:14px;
+	color:#FFF;
+	background-color:#6BC30D;
+	font-family:"Microsoft YaHei", "微软雅黑";}
+.user{
+	font-size:12px; 
+	padding-left:150px;}
+.user a{
+	color:#FFF;}
+.user a:hover{
+	color:#ff8040;}
+
+.imgBox{
+	margin-top:10px;
+	margin-bottom:20px;
+	height:500px;}
+.imgBox img{
+	width:1000px;
+	height:500px;}
+
+.TList{
+	width:1000px; 
+	height:700px;
+	border:#CCC solid 1px;}
+.movieList{
+	float:left;
+	width:333px;}
+/*电影列表*/
+.hovertable{
+	width:300px;
+	height:400px;
+	font-size:14px;
+	color:#ffffff;
+	table-layout:fixed;/* 只有定义了表格的布局算法为fixed，下面td的定义才能起作用。 */  
+}
+table.hovertable {
+	font-family: verdana,arial,sans-serif;
+	font-size:11px;
+	color:#ffffff;
+
+}
+table.hovertable th {
+	background-color:#aaaeb0;
+	border-width: 1px;
+	padding: 8px;
+
+}
+table.hovertable tr {
+	background-color:#c9cccd;
+}
+table.hovertable td {
+	width:100%;  
+    word-break:keep-all;/* 不换行 */  
+    white-space:nowrap;/* 不换行 */  
+    overflow:hidden;/* 内容超出宽度时隐藏超出部分的内容 */  
+    text-overflow:ellipsis;/* 当对象内文本溢出时显示省略标记(...) ；需与overflow:hidden;一起使用*/
+	border-width: 1px;
+	padding: 8px;
+}
+/*底部*/
+.footer{
+	text-align:center; 
+	background-color:#5a5f61; 
+	line-height:24px; 
+	padding:50px 0;
+	font-size:16px;
+	color:#ffffff;}
+.footer i{
+	font-style:normal; 
+	margin:0 5px; }
+.footer a{
+	color:#ffffff;
+	font-size:16px;}
+.footer a:hover{
+	color:#F60;}
+
+.web{
+	padding-top:30px;}
+.web img{
+	margin:0 12px;}
+
+.hr_25{
+	height:25px;}
+.hr_45{
+	height:45px;}
+.hr_7{
+	height:7px; 
+	overflow:hidden;}
+.hr_15{
+	height:15px; 
+	overflow:hidden;}
+
+/*more页面*/
+.showBox{
+	width:1000px; 
+	margin:10px auto;}
+
+table.moretable {
+	width:1000px;
+	font-family: verdana,arial,sans-serif;
+	font-size:11px;
+	color:#ffffff;
+	font-size:14px;
+	color:#ffffff;
+	table-layout:fixed;/* 只有定义了表格的布局算法为fixed，下面td的定义才能起作用。 */  
+}
+table.moretable th {
+	background-color:#aaaeb0;
+	border-width: 1px;
+	padding: 8px;
+
+}
+table.moretable tr {
+	background-color:#c9cccd;
+}
+table.moretable td {
+	width:100%;  
+    word-break:keep-all;/* 不换行 */  
+    white-space:nowrap;/* 不换行 */  
+    overflow:hidden;/* 内容超出宽度时隐藏超出部分的内容 */  
+    text-overflow:ellipsis;/* 当对象内文本溢出时显示省略标记(...) ；需与overflow:hidden;一起使用*/
+	border-width: 1px;
+	padding: 8px;
+}
+/*
+.openlogin i{font-size:12px;background:url('icons.png') no-repeat -40px -430px;margin-right:2px;}
+.openlogin a{-webkit-transition:color 0.3s linear;-moz-transition:color 0.3s linear;-o-transition:color 0.3s linear;transition:color 0.3s linear;}
+.openlogin a:hover{ color:#fff; }
+
+.login .reg a{background:#6BC30D;color:#fff;}*/
