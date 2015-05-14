@@ -11,6 +11,8 @@ import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.List;
 
+import util.DBUtil;
+
 public class SVDPlusPlusTrainer extends SVDTrainer {
 	private float y[][];
 	private float z[];
@@ -21,52 +23,16 @@ public class SVDPlusPlusTrainer extends SVDTrainer {
 		super(dim, isTranspose);
 	}
 
-	@Override
 	public void loadFile(String mTrainFileName, String mTestFileName,
 			String separater) throws Exception {
 		super.loadFile(mTrainFileName, mTestFileName, separater);
-		mHisMatrix = mRateMatrix;
+		mHisMatrix = mRateMatrix;//继承的写法
 	}
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public void loadHisFile(String mHisFileName, String separator)
-			throws Exception {
-		BufferedReader br = new BufferedReader(new FileReader(new File(
-				mHisFileName)));
-		String mLine = null;
-		mHisMatrix = new ArrayList[mUserNum + 1];
-		for (int i = 1; i < mHisMatrix.length; i++)
-			mHisMatrix[i] = new ArrayList<>();
-		int userId, itemId, mLineNum = 0;
-		while ((mLine = br.readLine()) != null) {
-			String[] splits = mLine.split(separator);
-			userId = Integer.valueOf(splits[0]);
-			itemId = Integer.valueOf(splits[1]);
-			if (isTranspose) {
-				int temp = userId;
-				userId = itemId;
-				itemId = temp;
-			}
-			mLineNum++;
-			if (mLineNum % 50000 == 0)
-				print(mLineNum + " lines read");
-			if (!mUserId2Map.containsKey(userId))
-				continue;
-			if (!mItemId2Map.containsKey(itemId)) {
-				mItemNum++;
-				mItemId2Map.put(itemId, mItemNum);
-			}
-			mHisMatrix[mUserId2Map.get(userId)].add(new Node(itemId, 0));
-		}
-	}
-
-	@Override
 	public void train(float gama, float lambda, int nIter) {
 		z = new float[dim];
 		sum = new float[dim];
 		y = new float[mItemNum + 1][dim];
-		print("------start training------");
 		double Rmse = 0, mLastRmse = 100000;
 		int nRateNum = 0;
 		float rui = 0;
@@ -78,31 +44,31 @@ public class SVDPlusPlusTrainer extends SVDTrainer {
 					continue;
 				float ru = (float) (1 / Math.sqrt(mHisMatrix[i].size()));
 				for (int k = 0; k < dim; k++) {
-					z[k] = p[i][k];
+					z[k] = p[i][k];//初始化=pu
 					sum[k] = 0;
 				}
 				for (int k = 0; k < mHisMatrix[i].size(); k++) {
 					for (int j = 0; j < dim; j++)
-						z[j] += ru * y[mHisMatrix[i].get(k).getId()][j];
+						z[j] += ru * y[mHisMatrix[i].get(k).getId()][j];//公式括号部分
 				}
 				for (int j = 0; j < mRateMatrix[i].size(); j++) {
 					rui = mean
 							+ bu[i]
 							+ bi[mRateMatrix[i].get(j).getId()]
 							+ mt.getInnerProduct(z, q[mRateMatrix[i].get(j)
-									.getId()]);
+									.getId()]);//svd++公式
 					if (rui > mMaxRate)
 						rui = mMaxRate;
 					else if (rui < mMinRate)
 						rui = mMinRate;
-					float e = mRateMatrix[i].get(j).getRate() - rui;
+					float e = mRateMatrix[i].get(j).getRate() - rui;//eui
 
-					// ����bu,bi,p,q
+					//bu,bi,p,q
 					bu[i] += gama * (e - lambda * bu[i]);
 					bi[mRateMatrix[i].get(j).getId()] += gama
 							* (e - lambda * bi[mRateMatrix[i].get(j).getId()]);
 					for (int k = 0; k < dim; k++) {
-						sum[k] += ru * e * q[mRateMatrix[i].get(j).getId()][k];
+						sum[k] += ru * e * q[mRateMatrix[i].get(j).getId()][k];//???
 						p[i][k] += gama
 								* (e * q[mRateMatrix[i].get(j).getId()][k] - lambda
 										* p[i][k]);
@@ -113,7 +79,7 @@ public class SVDPlusPlusTrainer extends SVDTrainer {
 					Rmse += e * e;
 					nRateNum++;
 				}
-				for (int k = 0; k < mHisMatrix[i].size(); k++) {
+				for (int k = 0; k < mHisMatrix[i].size(); k++) {//???
 					for (int len = 0; len < dim; len++)
 						y[mHisMatrix[i].get(k).getId()][len] += gama
 								* (sum[len] - lambda
@@ -192,9 +158,6 @@ public class SVDPlusPlusTrainer extends SVDTrainer {
 		br.close();
 		if (bw != null)
 			bw.close();
-		if (pst != null)
-			pst.close();
-		if (conn != null)
-			conn.close();
+		DBUtil.Close();
 	}
 }

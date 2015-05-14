@@ -7,6 +7,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
+import util.DBUtil;
+
 import com.google.common.collect.Table;
 import com.google.common.collect.TreeBasedTable;
 
@@ -16,48 +18,10 @@ public class SlopeOne {
 	Table<Integer, Integer, Integer> mFreqMatrix;//项目-项目-共同评分数
     
 	static int[] mAllItems = new int[1000];
-	public static void main(String args[]) throws ClassNotFoundException, SQLException, IOException {
-		long t1 = System.currentTimeMillis();
-	
-		Table<Integer, Integer, Float> data = loadMovieLensTrain();
-		// next, I create my predictor engine
-		SlopeOne so = new SlopeOne(data);
-//		System.out.println("Here's the data I have accumulated...");
-//		so.printData();
-		// then, I'm going to test it out...
-//		HashMap<Integer, Float> user = new HashMap<Integer, Float>();
-//		int user=1;
-//		System.out.println("Ok, now we predict...");
-//		user.put(1, 4.0f);//movie-rating
-//		System.out.println("Inputting...");
-//		SlopeOne1.print(user);
-//		System.out.println("Getting...");
-//		int i=1;
-		Connection conn = DBUtil.getConn();
-	    PreparedStatement pst = conn.prepareStatement("select distinct(userid) from test");
-	    ResultSet rs = pst.executeQuery();
-	    int userid;
-	    while(rs.next()){
-	    	userid = rs.getInt(1);
-			so.predict(userid);
-			so.weightlesspredict(userid);
-//			so.weightlesspredict(i);
-//			SlopeOne1.print(so.weightlesspredict(i));
-		}
-//    	SlopeOne1.print(so.weightlesspredict(user));//weightlesspredict返回prediction<Integer,Float>
-    	//
-    	/*user.put(4, 3.0f);
-    	System.out.println("Inputting...");
-//    	SlopeOne1.print(user);
-    	System.out.println("Getting...");*/
-    	
-    	long t2 = System.currentTimeMillis();
-    	System.out.println((t2-t1)+"ms");
-  }
 
 	public static void test_slopeone() throws ClassNotFoundException, SQLException, IOException{
 		long t1 = System.currentTimeMillis();		
-		Table<Integer, Integer, Float> data = loadMovieLensTrain();
+		Table<Integer, Integer, Float> data = DBUtil.getTrainData();
 		SlopeOne so = new SlopeOne(data);
 		Connection conn = DBUtil.getConn();
 	    PreparedStatement pst = conn.prepareStatement("select distinct(userid) from test");
@@ -73,56 +37,11 @@ public class SlopeOne {
     	System.out.println((t2-t1)+"ms");
 	}
 
-  public SlopeOne(Table<Integer, Integer, Float> data) {
-    mData = data;
-    buildDiffMatrix();
-  }
-	public static Connection getConn() throws ClassNotFoundException, SQLException{
-		Connection conn=null;
-		Class.forName("com.mysql.jdbc.Driver");
-		conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/data", "root", "123456");
-		return conn;
+	public SlopeOne(Table<Integer, Integer, Float> data) {
+		mData = data;
+		buildDiffMatrix();
 	}
-	//训练集
-	public static Table<Integer, Integer, Float> loadMovieLensTrain() throws ClassNotFoundException, SQLException, IOException{
-		Table<Integer, Integer, Float> mm = TreeBasedTable.create();
-		Map<Integer,Float> m = new TreeMap<Integer,Float>();
-		
-		Connection conn = getConn();
-		//这里要按movieid排序，不然下面赋值到数组时会出错，因为if和else的map是承接的
-		PreparedStatement pst = conn.prepareStatement("select * from base1 order by userid asc,movieid asc");
-		ResultSet rs = pst.executeQuery();
-		int userid,movieid;
-		float score;
-		int i=0;
-		while(rs.next()){
-			userid = rs.getInt(2);
-			movieid = rs.getInt(3);
-			score = rs.getFloat(4);
-			
-			mm.put(userid, movieid, score);
-		}
-		/*pst = conn.prepareStatement("select distinct movieid from base1 order by movieid");
-		rs = pst.executeQuery();
-		while(rs.next()){
-			mAllItems[i] = rs.getInt(1);
-//			System.out.println(i+" "+mAllItems[i]);
-			i++;
-			
-		}	*/
-		if(rs!=null){
-			rs.close();
-		}
-		if(pst!=null){
-			pst.close();
-		}
-		if(conn!=null){
-			conn.close();
-		}	    
-		return mm;
-	}
-  
-  
+
   /**
    * Based on existing data, and using weights, try to predict all missing
    * ratings. The trick to make this more scalable is to consider only

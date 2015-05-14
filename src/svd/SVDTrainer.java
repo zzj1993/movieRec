@@ -5,30 +5,34 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import util.DBUtil;
+
 
 public class SVDTrainer implements Trainer {
-	protected boolean isTranspose;
-	protected int mUserNum;
-	protected int mItemNum;
-	protected int dim;
-	protected float[][] p;
-	protected float[][] q;
+	protected boolean isTranspose;//转置
+	protected int mUserNum;//用户号
+	protected int mItemNum;//项目号
+	protected int dim;//二维维度
+	protected float[][] p;//用户二维矩阵
+	protected float[][] q;//项目二维矩阵
 	protected float[] bu;
 	protected float[] bi;
-	protected float mean;
+	protected float mean;//平均评分
 	protected float mMaxRate;
 	protected float mMinRate;
-	protected String mTestFileName;
-	protected String mSeparator;
+	protected String mTestFileName;//测试集
+	protected String mSeparator;//分隔符
 	protected MathTool mt;
-	protected Map<Integer, Integer> mUserId2Map;
-	protected Map<Integer, Integer> mItemId2Map;
-	protected List<Node>[] mRateMatrix;
+	protected Map<Integer, Integer> mUserId2Map;//userid-usernum
+	protected Map<Integer, Integer> mItemId2Map;//itemid-itemnum
+	protected List<Node>[] mRateMatrix;//list数组，user-item-rating
 
 	public SVDTrainer(int dim, boolean isTranspose) {
 		this.isTranspose = isTranspose;
@@ -38,6 +42,7 @@ public class SVDTrainer implements Trainer {
 		mItemId2Map = new HashMap<>();
 	}
 
+	//得到mUserId2Map，mItemId2Map
 	private void mapping(String fileName, String separator) throws Exception {
 		BufferedReader br = new BufferedReader(new FileReader(
 				new File(fileName)));
@@ -49,7 +54,7 @@ public class SVDTrainer implements Trainer {
 			String[] splits = mLine.split(separator);
 			userId = Integer.valueOf(splits[0]);
 			itemId = Integer.valueOf(splits[1]);
-			if (isTranspose) {
+			if (isTranspose) {//如果是转置矩阵
 				int temp = userId;
 				userId = itemId;
 				itemId = temp;
@@ -63,8 +68,6 @@ public class SVDTrainer implements Trainer {
 				mItemId2Map.put(itemId, mItemNum);
 			}
 			mLineNum++;
-			if (mLineNum % 50000 == 0)
-				print(mLineNum + " lines read");
 		}
 	}
 
@@ -72,24 +75,17 @@ public class SVDTrainer implements Trainer {
 		System.out.println(out);
 	}
 
-	@SuppressWarnings("unchecked")
-	@Override
+	//加载train集合test集
 	public void loadFile(String mTrainFileName, String mTestFileName,
 			String separator) throws Exception {
 		this.mTestFileName = mTestFileName;
 		mSeparator = separator;
-		// ������Ҫ���ٿռ�
-		print("------Mapping UserId and ItemId ...------");
-		print("------reading train file ...------");
+
+		//用户号和项目号
 		mapping(mTrainFileName, separator);
-		print("------read train file complete!------");
-
-		print("------reading test file ...------");
 		mapping(mTestFileName, separator);
-		print("------read test file complete!------");
-		print("------Mapping complete!------");
 
-		// ����ռ�
+		//初始化数组
 		p = new float[mUserNum + 1][dim];
 		bu = new float[mUserNum + 1];
 		for (int i = 1; i <= mUserNum; i++) {
@@ -97,8 +93,10 @@ public class SVDTrainer implements Trainer {
 		}
 		q = new float[mItemNum + 1][dim];
 		bi = new float[mItemNum + 1];
+		
+		//user-item-rating
 		mRateMatrix = new ArrayList[mUserNum + 1];
-		for (int i = 1; i < mRateMatrix.length; i++)
+		for (int i = 1; i < mRateMatrix.length; i++)//用户号从0开始
 			mRateMatrix[i] = new ArrayList<>();
 
 		int userId, itemId, mLineNum = 0;
@@ -110,7 +108,7 @@ public class SVDTrainer implements Trainer {
 			String[] splits = mLine.split(separator);
 			userId = Integer.valueOf(splits[0]);
 			itemId = Integer.valueOf(splits[1]);
-			if (isTranspose) {
+			if (isTranspose) {//交换两个值user-item-rating变为item-user-rating
 				int temp = userId;
 				userId = itemId;
 				itemId = temp;
@@ -118,31 +116,28 @@ public class SVDTrainer implements Trainer {
 			rate = Float.valueOf(splits[2]);
 			mLineNum++;
 			mRateMatrix[mUserId2Map.get(userId)].add(new Node(mItemId2Map
-					.get(itemId), rate));
-			if (mLineNum % 50000 == 0)
-				print(mLineNum + " lines read");
+					.get(itemId), rate));//user-item-rating或item-user-rating
 			mean += rate;
 			if (rate < mMinRate)
-				mMinRate = rate;
+				mMinRate = rate;//得到最小评分
 			if (rate > mMaxRate)
-				mMaxRate = rate;
+				mMaxRate = rate;//最大
 		}
-		mean /= mLineNum;
+		mean /= mLineNum;//itemid或userid平均评分
 		init();
 	}
 
 	private void init() {
 		for (int i = 1; i <= mUserNum; i++)
 			for (int j = 0; j < dim; j++)
-				p[i][j] = (float) (Math.random() / 10);
+				p[i][j] = (float) (Math.random() / 10);//[0,1]/10,赋0
 		for (int i = 1; i <= mItemNum; i++)
 			for (int j = 0; j < dim; j++)
-				q[i][j] = (float) (Math.random() / 10);
+				q[i][j] = (float) (Math.random() / 10);//赋0
 	}
 
-	@Override
+	//训练
 	public void train(float gama, float lambda, int nIter) {
-		print("------start training------");
 		double Rmse = 0, mLastRmse = 100000;
 		int nRateNum = 0;
 		float rui = 0;
@@ -155,14 +150,14 @@ public class SVDTrainer implements Trainer {
 							+ bu[i]
 							+ bi[mRateMatrix[i].get(j).getId()]
 							+ mt.getInnerProduct(p[i], q[mRateMatrix[i].get(j)
-									.getId()]);
-					if (rui > mMaxRate)
+									.getId()]);//最小二乘公式，svd
+					if (rui > mMaxRate)//大于最大评分
 						rui = mMaxRate;
 					else if (rui < mMinRate)
 						rui = mMinRate;
-					float e = mRateMatrix[i].get(j).getRate() - rui;
+					float e = mRateMatrix[i].get(j).getRate() - rui;//eui
 
-					// ����bu,bi,p,q
+					//随机梯度优化
 					bu[i] += gama * (e - lambda * bu[i]);
 					bi[mRateMatrix[i].get(j).getId()] += gama
 							* (e - lambda * bi[mRateMatrix[i].get(j).getId()]);
@@ -196,8 +191,11 @@ public class SVDTrainer implements Trainer {
 		String mLine;
 		double Rmse = 0;
 		int nNum = 0;
+		Connection conn = DBUtil.getConn();
+		PreparedStatement pst = conn.prepareStatement("insert into svd1(userid,movieid,score) values(?,?,?)");
+		
 		BufferedReader br = new BufferedReader(new FileReader(new File(
-				mTestFileName)));
+				mTestFileName)));//读取测试集
 		BufferedWriter bw = null;
 		if (!mOutputFileName.equals(""))
 			bw = new BufferedWriter(new FileWriter(new File(mOutputFileName)));
@@ -216,11 +214,15 @@ public class SVDTrainer implements Trainer {
 					+ bu[mUserId2Map.get(userId)]
 					+ bi[mItemId2Map.get(itemId)]
 					+ mt.getInnerProduct(p[mUserId2Map.get(userId)],
-							q[mItemId2Map.get(itemId)]);
+							q[mItemId2Map.get(itemId)]);//得到预测的评分值
 			if (mOutputFileName.equals("")) {
 				Rmse += (rate - rui) * (rate - rui);
 				nNum++;
 			} else {
+				pst.setInt(1, userId);
+				pst.setInt(2, itemId);
+				pst.setDouble(3, rui);
+				pst.executeUpdate();
 				bw.write(userId + separator + itemId + separator + rui + "\n");
 				bw.flush();
 			}
@@ -229,11 +231,7 @@ public class SVDTrainer implements Trainer {
 		br.close();
 		if (bw != null)
 			bw.close();
+		DBUtil.Close();
 	}
 
-	@Override
-	public void loadHisFile(String mHisFileName, String separator)
-			throws Exception {
-
-	}
 }

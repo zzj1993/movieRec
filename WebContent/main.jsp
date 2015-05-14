@@ -1,5 +1,5 @@
 <%@ page import="java.util.*" %> 
-<%@ page import="common0503.Result" %>
+<%@ page import="useritemCF.Result" %>
 <%@ page language="java" contentType="text/html; charset=utf-8"
     pageEncoding="UTF-8"%>
 <%
@@ -118,7 +118,6 @@ jQuery(function($){
 <div class="footer">
 	<p><a href="#">公司简介</a><i>|</i><a href="#">相关公告</a><i>|</i> <a href="#">招纳贤士</a><i>|</i><a href="#">联系我们</a><i>|</i>客服热线：123-456-7890</p>
 	<p>Copyright &copy; 2006 - 2015 版权所有&nbsp;&nbsp;&nbsp;京ICP备09037834号&nbsp;&nbsp;&nbsp;京ICP证B1034-8373号&nbsp;&nbsp;&nbsp;某市公安局XX分局备案编号：123456789123</p>
-	<p class="web"><a href="#"><img src="images/webLogo.jpg" alt="logo"></a><a href="#"><img src="images/webLogo.jpg" alt="logo"></a><a href="#"><img src="images/webLogo.jpg" alt="logo"></a><a href="#"><img src="images/webLogo.jpg" alt="logo"></a></p>
 </div>
 
 

@@ -1,20 +1,16 @@
-package common0503;
+package useritemCF;
 
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
+
+import util.DBUtil;
 
 import com.google.common.collect.Table;
 
@@ -32,7 +28,6 @@ public class Recommend {
 		double score;
 		double timestamp;//8开头
 		double guiyi;
-		int year;
 		double weight=0.0;//时间权重
 		
 		uiCF uc = new uiCF();
@@ -41,8 +36,8 @@ public class Recommend {
 		Iterator<Map.Entry<Integer, Double>> it = uiSim.iterator();
 		Entry<Integer, Double> entry;
 		
-		DBUtil db = new DBUtil();
-		double a[] = db.Max_Min();
+		loadData load = new loadData();
+		double a[] = load.Max_Min();
 		Average avg = new Average();
 		
 		while(it.hasNext()){
@@ -50,7 +45,6 @@ public class Recommend {
 			itemid =entry.getKey();
 			similarity = entry.getValue();//得到相似度
 			timestamp = uiTime.get(itemid, userID);//得到时间戳
-//			timestamp = Math.round(entry.getValue().get(1));//得到时间戳			
 
 			//归一化处理时间
 			guiyi = (timestamp-a[1])/(a[0]-a[1]);
@@ -62,17 +56,12 @@ public class Recommend {
 			
 			if(itemid!=itemID){
 				avgOtherItem = avg.getAverage(uiRating1,itemid);
-				weight = 1.0/(1+Math.exp(-guiyi));
-//				weight = Math.exp(-0.1*(2015-year));//当前是2015年，时间参数a=0.05
-//				weight = Math.pow(1-Math.abs(-score), 2);//当前评分减去要已经评过的
+//				weight = 1.0/(1+Math.exp(-guiyi));
 				//累加
-				simSums += similarity*weight;				
-				weightAvg += (score-avgOtherItem)*similarity*weight;
-//				simSums += similarity;				
-//				weightAvg += (score*weight-avgOtherItem)*similarity;
-//				simSums += similarity;				
-//				weightAvg += (score-avgOtherItem)*similarity;
-			
+//				simSums += similarity*weight;				
+//				weightAvg += (score-avgOtherItem)*similarity*weight;
+				simSums += similarity;				
+				weightAvg += (score-avgOtherItem)*similarity;			
 			}
 		}
 
@@ -89,16 +78,16 @@ public class Recommend {
 	 * @param k 相似用户数
 	 * @param n 推荐物品个数
 	 */
-	public void getItemBaseRating(int userID) throws ClassNotFoundException, SQLException, IOException{
-		DBUtil db = new DBUtil();
-		Object a[] = db.loadMovieLensTrain();//item-user
+	public void getItemBaseRating() throws ClassNotFoundException, SQLException, IOException{
+		loadData load = new loadData();
+		Object a[] = load.loadMovieLensTrain();//item-user
 		Table<Integer, Integer, Integer> itemUserRating1 = (Table<Integer, Integer, Integer>) a[0];
 		Table<Integer, Integer, Double> itemUserTime1 = (Table<Integer, Integer, Double>) a[1];
 		Table<Integer, Integer, Integer> userItemRating1 = (Table<Integer, Integer, Integer>) a[2];
 		Table<Integer, Integer, Double> userItemTime1 = (Table<Integer, Integer, Double>) a[3];
 		
 		
-		Connection conn = db.getConn();
+		Connection conn = DBUtil.getConn();
 		String sql = "SELECT userid,movieid from test";
 		PreparedStatement pst = conn.prepareStatement(sql);
 		ResultSet rs = pst.executeQuery();
@@ -107,7 +96,7 @@ public class Recommend {
 		
 		/******************item-base*********************/		
 		//pearson相似度
-		pst = conn.prepareStatement("insert into result1(userid,movieid,score) values(?,?,?)");		
+		pst = conn.prepareStatement("insert into result2(userid,movieid,score) values(?,?,?)");		
 		while(rs.next()){
 			userid = rs.getInt(1);
 			movieid = rs.getInt(2);//4是pearson相似度
@@ -118,12 +107,7 @@ public class Recommend {
 			pst.setDouble(3, rating);
 			pst.executeUpdate();
 		}
-		if(pst!=null){
-			pst.close();
-		}
-		if(conn!=null){
-			conn.close();
-		}
+		DBUtil.Close();
 	}
 	
 	/**
@@ -131,8 +115,8 @@ public class Recommend {
 	 * @param k 相似用户数
 	 * @param n 推荐物品个数
 	 */
-	public void getUserBaseRating(int userID) throws ClassNotFoundException, SQLException, IOException{
-		DBUtil db = new DBUtil();
+	public void getUserBaseRating() throws ClassNotFoundException, SQLException, IOException{
+		loadData db = new loadData();
 		Object a[] = db.loadMovieLensTrain();//item-user
 		Table<Integer, Integer, Integer> itemUserRating1 = (Table<Integer, Integer, Integer>) a[0];
 		Table<Integer, Integer, Double> itemUserTime1 = (Table<Integer, Integer, Double>) a[1];
@@ -141,9 +125,12 @@ public class Recommend {
 	
 		Connection conn = DBUtil.getConn();
 		/******************user-base*********************/
-		//将预测结果插入,pearson相似度		
-		PreparedStatement pst = conn.prepareStatement("insert into u1(userid,movieid,score) values(?,?,?)");				
+		String sql = "SELECT userid,movieid from test";
+		PreparedStatement pst = conn.prepareStatement(sql);
 		ResultSet rs = pst.executeQuery();
+		
+		//将预测结果插入,pearson相似度		
+		pst = conn.prepareStatement("insert into u2(userid,movieid,score) values(?,?,?)");				
 		int userid,movieid;
 		double rating;
 		while(rs.next()){
@@ -156,11 +143,6 @@ public class Recommend {
 			pst.setDouble(3, rating);
 			pst.executeUpdate();
 		}
-		if(pst!=null){
-			pst.close();
-		}
-		if(conn!=null){
-			conn.close();
-		}
+		DBUtil.Close();
 	}
 }

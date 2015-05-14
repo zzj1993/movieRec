@@ -1,4 +1,4 @@
-package common0503;
+package useritemCF;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
 
+import util.DBUtil;
+
 import com.google.common.collect.Table;
 import com.google.common.collect.TreeBasedTable;
 /**
@@ -22,13 +24,7 @@ import com.google.common.collect.TreeBasedTable;
  * @author junzai
  *
  */
-public class DBUtil {
-	public static Connection getConn() throws ClassNotFoundException, SQLException{
-		Connection conn=null;
-		Class.forName("com.mysql.jdbc.Driver");
-		conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/data", "root", "123456");
-		return conn;
-	}
+public class loadData {
 	//训练集，rating和time放在两个矩阵里
 	public Object[] loadMovieLensTrain() throws ClassNotFoundException, SQLException, IOException{
 		Table<Integer, Integer, Integer> itemUserRating = TreeBasedTable.create();
@@ -38,7 +34,7 @@ public class DBUtil {
 		Table<Integer, Integer, Double> userItemTime = TreeBasedTable.create();
 		Object a[] = new Object[4];
 		
-		Connection conn = getConn();
+		Connection conn = DBUtil.getConn();
 		//这里要按movieid排序，不然下面赋值到数组时会出错，因为if和else的map是承接的
 		PreparedStatement pst = conn.prepareStatement("select * from base order by movieid asc,userid asc ");
 		ResultSet rs = pst.executeQuery();
@@ -70,37 +66,22 @@ public class DBUtil {
 		}
 		a[2] = userItemRating;
 		a[3] = userItemTime;
-		if(rs!=null){
-			rs.close();
-		}
-		if(pst!=null){
-			pst.close();
-		}
-		if(conn!=null){
-			conn.close();
-		}		
+		
+		DBUtil.Close();
 		return a;
 	}
 	
 	//时间归一化处理，找到最大和最小的时间
 	public double[] Max_Min() throws ClassNotFoundException, SQLException{
 		double a[] = new double[2];
-		Connection conn = getConn();
+		Connection conn = DBUtil.getConn();
 		PreparedStatement pst = conn.prepareStatement("select max(timestamp),min(timestamp) from base");
 		ResultSet rs = pst.executeQuery();
 		while(rs.next()){
 			a[0] = rs.getDouble(1);
 			a[1] = rs.getDouble(2);
 		}
-		if(rs!=null){
-			rs.close();
-		}
-		if(pst!=null){
-			pst.close();
-		}
-		if(conn!=null){
-			conn.close();
-		}
+		DBUtil.Close();
 		return a;
 	}
 }

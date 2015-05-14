@@ -1,8 +1,9 @@
 eclipse.preferences.version=1
 encoding//WebContent/main.jsp=UTF-8
 encoding//WebContent/more.jsp=UTF-8
-encoding//src/common0503=GBK
 encoding//src/servlet=gb2312
 encoding//src/slopeone=GBK
+encoding//src/svd=UTF-8
+encoding//src/useritemCF=GBK
 encoding/WebContent=GBK
 encoding/src=UTF-8

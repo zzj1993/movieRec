@@ -10,7 +10,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import common0503.DBUtil;
+import useritemCF.loadData;
+import util.DBUtil;
 
 public class userServlet extends HttpServlet {
 	/**
